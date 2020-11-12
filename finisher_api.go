@@ -231,7 +231,7 @@ func (tx *DB) assignInterfacesToValue(values ...interface{}) {
 				tx.assignInterfacesToValue(exprs)
 			}
 		default:
-			if s, err := schema.Parse(value, tx.cacheStore, tx.NamingStrategy); err == nil {
+			if s, err := schema.Parse(value, tx.cacheStore, tx.NamingStrategy, tx.AutoEmbedd, tx.UseJSONTags); err == nil {
 				reflectValue := reflect.Indirect(reflect.ValueOf(value))
 				switch reflectValue.Kind() {
 				case reflect.Struct:

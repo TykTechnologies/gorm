@@ -3,6 +3,7 @@ package schema
 import (
 	"database/sql"
 	"database/sql/driver"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -34,6 +35,7 @@ const (
 	String DataType = "string"
 	Time   DataType = "time"
 	Bytes  DataType = "bytes"
+	JSON   DataType = "json"
 )
 
 type Field struct {
@@ -64,6 +66,7 @@ type Field struct {
 	StructField            reflect.StructField
 	Tag                    reflect.StructTag
 	TagSettings            map[string]string
+	JSONTagSettings       map[string]string
 	Schema                 *Schema
 	EmbeddedSchema         *Schema
 	OwnerSchema            *Schema
@@ -87,6 +90,7 @@ func (schema *Schema) ParseField(fieldStruct reflect.StructField) *Field {
 		Readable:               true,
 		Tag:                    fieldStruct.Tag,
 		TagSettings:            ParseTagSetting(fieldStruct.Tag.Get("gorm"), ";"),
+		JSONTagSettings:        ParseTagSetting(fieldStruct.Tag.Get("json"), ","),
 		Schema:                 schema,
 		AutoIncrementIncrement: 1,
 	}
@@ -129,6 +133,8 @@ func (schema *Schema) ParseField(fieldStruct reflect.StructField) *Field {
 								field.TagSettings[key] = value
 							}
 						}
+
+						ParseTagSetting(field.IndirectFieldType.Field(i).Tag.Get("gorm"), ";")
 					}
 				}
 			}
@@ -139,6 +145,13 @@ func (schema *Schema) ParseField(fieldStruct reflect.StructField) *Field {
 
 	if dbName, ok := field.TagSettings["COLUMN"]; ok {
 		field.DBName = dbName
+	} else {
+		if schema.UseJSONTags {
+			jsonTag := strings.Split(fieldStruct.Tag.Get("json"), ",")[0]
+			if jsonTag != "omniempty" && jsonTag != "-" {
+				field.DBName = jsonTag
+			}
+		}
 	}
 
 	if val, ok := field.TagSettings["PRIMARYKEY"]; ok && utils.CheckTruth(val) {
@@ -241,7 +254,11 @@ func (schema *Schema) ParseField(fieldStruct reflect.StructField) *Field {
 	case reflect.Array, reflect.Slice:
 		if reflect.Indirect(fieldValue).Type().Elem() == reflect.TypeOf(uint8(0)) {
 			field.DataType = Bytes
+		} else {
+			field.DataType = "raw_json"
 		}
+	default:
+		field.DataType = "raw_json"
 	}
 
 	field.GORMDataType = field.DataType
@@ -341,6 +358,18 @@ func (schema *Schema) ParseField(fieldStruct reflect.StructField) *Field {
 		}
 	}
 
+	if reflect.Indirect(fieldValue).Kind() == reflect.Struct {
+		if schema.AutoEmbedd {
+			fieldValue := reflect.New(field.FieldType)
+			switch fieldValue.Elem().Interface().(type) {
+			// Apparently time.Time also a struct...Skip.
+			case time.Time, *time.Time:
+			default:
+				field.TagSettings["EMBEDDED"] = "true"
+			}
+		}
+	}
+
 	if _, ok := field.TagSettings["EMBEDDED"]; ok || (fieldStruct.Anonymous && !isValuer && (field.Creatable || field.Updatable || field.Readable)) {
 		if reflect.Indirect(fieldValue).Kind() == reflect.Struct {
 			var err error
@@ -350,7 +379,7 @@ func (schema *Schema) ParseField(fieldStruct reflect.StructField) *Field {
 
 			cacheStore := &sync.Map{}
 			cacheStore.Store(embeddedCacheKey, true)
-			if field.EmbeddedSchema, err = getOrParse(fieldValue.Interface(), cacheStore, embeddedNamer{Table: schema.Table, Namer: schema.namer}); err != nil {
+			if field.EmbeddedSchema, err = getOrParse(fieldValue.Interface(), cacheStore, embeddedNamer{Table: schema.Table, Namer: schema.namer}, schema.AutoEmbedd, schema.UseJSONTags); err != nil {
 				schema.err = err
 			}
 
@@ -363,6 +392,14 @@ func (schema *Schema) ParseField(fieldStruct reflect.StructField) *Field {
 					ef.StructField.Index = append([]int{fieldStruct.Index[0]}, ef.StructField.Index...)
 				} else {
 					ef.StructField.Index = append([]int{-fieldStruct.Index[0] - 1}, ef.StructField.Index...)
+				}
+
+				if _, ok := field.TagSettings["EMBEDDEDPREFIX"]; !ok {
+					if schema.UseJSONTags {
+						if _, ok := field.JSONTagSettings["INLINE"]; !ok {
+							field.TagSettings["EMBEDDEDPREFIX"] = field.DBName + "_"
+						}
+					}
 				}
 
 				if prefix, ok := field.TagSettings["EMBEDDEDPREFIX"]; ok && ef.DBName != "" {
@@ -406,11 +443,23 @@ func (field *Field) setupValuerAndSetter() {
 	case len(field.StructField.Index) == 1:
 		field.ValueOf = func(value reflect.Value) (interface{}, bool) {
 			fieldValue := reflect.Indirect(value).Field(field.StructField.Index[0])
+
+			if field.DataType == "raw_json" {
+				bytes, _ := json.Marshal(fieldValue.Interface())
+				return bytes, false
+			}
+
 			return fieldValue.Interface(), fieldValue.IsZero()
 		}
 	case len(field.StructField.Index) == 2 && field.StructField.Index[0] >= 0:
 		field.ValueOf = func(value reflect.Value) (interface{}, bool) {
 			fieldValue := reflect.Indirect(value).Field(field.StructField.Index[0]).Field(field.StructField.Index[1])
+
+			if field.DataType == "raw_json" {
+				bytes, _ := json.Marshal(fieldValue.Interface())
+				return bytes, false
+			}
+
 			return fieldValue.Interface(), fieldValue.IsZero()
 		}
 	default:
@@ -434,6 +483,12 @@ func (field *Field) setupValuerAndSetter() {
 					}
 				}
 			}
+
+			if field.DataType == "raw_json" {
+				bytes, _ := json.Marshal(v.Interface())
+				return bytes, false
+			}
+
 			return v.Interface(), v.IsZero()
 		}
 	}
@@ -714,6 +769,17 @@ func (field *Field) setupValuerAndSetter() {
 			case float64, float32:
 				field.ReflectValueOf(value).SetString(fmt.Sprintf("%."+strconv.Itoa(field.Precision)+"f", data))
 			default:
+				reflectV := reflect.ValueOf(v)
+				if reflectV.Type().AssignableTo(field.FieldType) {
+					field.ReflectValueOf(value).Set(reflectV)
+				} else if reflectV.Kind() == reflect.Ptr {
+					if reflectV.IsNil() || !reflectV.IsValid() {
+						field.ReflectValueOf(value).Set(reflect.New(field.FieldType).Elem())
+					} else {
+						return field.Set(value, reflectV.Elem().Interface())
+					}
+				}
+
 				return fallbackSetter(value, v, field.Set)
 			}
 			return err
@@ -774,6 +840,10 @@ func (field *Field) setupValuerAndSetter() {
 			}
 		default:
 			if _, ok := fieldValue.Elem().Interface().(sql.Scanner); ok {
+				// if field.DBName == "_id" {
+				// 	panic(values[idx].(**string))
+				// }
+
 				// pointer scanner
 				field.Set = func(value reflect.Value, v interface{}) (err error) {
 					reflectV := reflect.ValueOf(v)
@@ -826,6 +896,29 @@ func (field *Field) setupValuerAndSetter() {
 				}
 			} else {
 				field.Set = func(value reflect.Value, v interface{}) (err error) {
+					if field.DataType == "raw_json" {
+						var bytes []byte
+
+						switch t := v.(type) {
+						case []uint8:
+							bytes = []byte(t)
+						case *sql.RawBytes:
+							bytes = []byte(*t)
+						default:
+							panic(v)
+						}
+
+						valueV := field.ReflectValueOf(value)
+
+						if valueV.Kind() == reflect.Ptr {
+							err = json.Unmarshal(bytes, field.ReflectValueOf(value).Interface())
+						} else {
+							err = json.Unmarshal(bytes, field.ReflectValueOf(value).Addr().Interface())
+						}
+
+						return
+					}
+
 					return fallbackSetter(value, v, field.Set)
 				}
 			}

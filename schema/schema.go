@@ -28,6 +28,8 @@ type Schema struct {
 	FieldsByDBName            map[string]*Field
 	FieldsWithDefaultDBValue  []*Field // fields with default value assigned by database
 	Relationships             Relationships
+	AutoEmbedd                bool
+	UseJSONTags               bool
 	CreateClauses             []clause.Interface
 	QueryClauses              []clause.Interface
 	UpdateClauses             []clause.Interface
@@ -72,7 +74,7 @@ type Tabler interface {
 }
 
 // Parse get data type from dialector
-func Parse(dest interface{}, cacheStore *sync.Map, namer Namer) (*Schema, error) {
+func Parse(dest interface{}, cacheStore *sync.Map, namer Namer, AutoEmbedd bool, UseJSONTags bool) (*Schema, error) {
 	if dest == nil {
 		return nil, fmt.Errorf("%w: %+v", ErrUnsupportedDataType, dest)
 	}
@@ -115,6 +117,8 @@ func Parse(dest interface{}, cacheStore *sync.Map, namer Namer) (*Schema, error)
 		cacheStore:     cacheStore,
 		namer:          namer,
 		initialized:    make(chan struct{}),
+		AutoEmbedd:     AutoEmbedd,
+		UseJSONTags:    UseJSONTags,
 	}
 	// When the schema initialization is completed, the channel will be closed
 	defer close(schema.initialized)
@@ -143,7 +147,19 @@ func Parse(dest interface{}, cacheStore *sync.Map, namer Namer) (*Schema, error)
 		}
 	}
 
+	// if modelType.Field(0).Name == "Enabled" {
+	// 	if _, ok := namer.(embeddedNamer); ok {
+	// 		fmt.Printf("%#v\n", schema.Fields)
+	// 	}
+	// }
+
 	for _, field := range schema.Fields {
+		// if modelType.Field(0).Name == "Enabled" {
+		// 	if _, ok := namer.(embeddedNamer); ok {
+		// 		fmt.Printf("%#v\n", field)
+		// 	}
+		// }
+
 		if field.DBName == "" && field.DataType != "" {
 			field.DBName = namer.ColumnName(schema.Table, field.Name)
 		}
@@ -237,7 +253,9 @@ func Parse(dest interface{}, cacheStore *sync.Map, namer Namer) (*Schema, error)
 		for _, field := range schema.Fields {
 			if field.DataType == "" && (field.Creatable || field.Updatable || field.Readable) {
 				if schema.parseRelation(field); schema.err != nil {
-					return schema, schema.err
+					schema.err = nil
+				}
+					//return schema, schema.err
 				} else {
 					schema.FieldsByName[field.Name] = field
 				}
@@ -265,7 +283,7 @@ func Parse(dest interface{}, cacheStore *sync.Map, namer Namer) (*Schema, error)
 	return schema, schema.err
 }
 
-func getOrParse(dest interface{}, cacheStore *sync.Map, namer Namer) (*Schema, error) {
+func getOrParse(dest interface{}, cacheStore *sync.Map, namer Namer, AutoEmbedd bool, UseJSONTags bool) (*Schema, error) {
 	modelType := reflect.ValueOf(dest).Type()
 	for modelType.Kind() == reflect.Slice || modelType.Kind() == reflect.Array || modelType.Kind() == reflect.Ptr {
 		modelType = modelType.Elem()
@@ -282,5 +300,5 @@ func getOrParse(dest interface{}, cacheStore *sync.Map, namer Namer) (*Schema, e
 		return v.(*Schema), nil
 	}
 
-	return Parse(dest, cacheStore, namer)
+	return Parse(dest, cacheStore, namer, AutoEmbedd, UseJSONTags)
 }

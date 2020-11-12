@@ -348,7 +348,7 @@ func (stmt *Statement) BuildCondition(query interface{}, args ...interface{}) []
 				reflectValue = reflectValue.Elem()
 			}
 
-			if s, err := schema.Parse(arg, stmt.DB.cacheStore, stmt.DB.NamingStrategy); err == nil {
+			if s, err := schema.Parse(arg, stmt.DB.cacheStore, stmt.DB.NamingStrategy, stmt.DB.AutoEmbedd, stmt.DB.UseJSONTags); err == nil {
 				selectedColumns := map[string]bool{}
 				if idx == 0 {
 					for _, v := range args[1:] {
@@ -442,7 +442,7 @@ func (stmt *Statement) Build(clauses ...string) {
 }
 
 func (stmt *Statement) Parse(value interface{}) (err error) {
-	if stmt.Schema, err = schema.Parse(value, stmt.DB.cacheStore, stmt.DB.NamingStrategy); err == nil && stmt.Table == "" {
+	if stmt.Schema, err = schema.Parse(value, stmt.DB.cacheStore, stmt.DB.NamingStrategy, stmt.DB.AutoEmbedd, stmt.DB.UseJSONTags); err == nil && stmt.Table == "" {
 		if tables := strings.Split(stmt.Schema.Table, "."); len(tables) == 2 {
 			stmt.TableExpr = &clause.Expr{SQL: stmt.Quote(stmt.Schema.Table)}
 			stmt.Table = tables[1]

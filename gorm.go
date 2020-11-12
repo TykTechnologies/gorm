@@ -46,6 +46,13 @@ type Config struct {
 	// CreateBatchSize default create batch size
 	CreateBatchSize int
 
+	// Automatically embed structs
+	AutoEmbedd bool
+
+	UseJSONTags bool
+
+	UnknownToJSON bool
+
 	// ClauseBuilders clause builder
 	ClauseBuilders map[string]clause.ClauseBuilder
 	// ConnPool db conn pool

@@ -2,9 +2,10 @@ package tests_test
 
 import (
 	"database/sql/driver"
-	"encoding/json"
 	"errors"
 	"testing"
+
+	"github.com/helloeave/json"
 
 	"gorm.io/gorm"
 	. "gorm.io/gorm/utils/tests"
@@ -117,7 +118,7 @@ type Content struct {
 }
 
 func (c Content) Value() (driver.Value, error) {
-	return json.Marshal(c)
+	return json.MarshalSafeCollections(c)
 }
 
 func (c *Content) Scan(src interface{}) error {

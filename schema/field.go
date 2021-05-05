@@ -3,13 +3,14 @@ package schema
 import (
 	"database/sql"
 	"database/sql/driver"
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/helloeave/json"
 
 	"github.com/jinzhu/now"
 	"gorm.io/gorm/utils"
@@ -465,7 +466,7 @@ func nilValue(i interface{}) []byte {
 		}
 	}
 
-	bytes, _ := json.Marshal(i)
+	bytes, _ := json.MarshalSafeCollections(i)
 	return bytes
 }
 

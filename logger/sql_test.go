@@ -2,12 +2,12 @@ package logger_test
 
 import (
 	"database/sql/driver"
-	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
 	"testing"
 
+	"github.com/helloeave/json"
 	"github.com/jinzhu/now"
 	"gorm.io/gorm/logger"
 )
@@ -27,7 +27,7 @@ type ExampleStruct struct {
 }
 
 func (s ExampleStruct) Value() (driver.Value, error) {
-	return json.Marshal(s)
+	return json.MarshalSafeCollections(s)
 }
 
 func format(v []byte, escaper string) string {

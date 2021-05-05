@@ -2,17 +2,18 @@ package tests_test
 
 import (
 	"database/sql"
-	"encoding/json"
 	"reflect"
 	"sort"
 	"sync/atomic"
 	"testing"
 
+	"github.com/helloeave/json"
+
 	"gorm.io/gorm"
 )
 
 func toJSONString(v interface{}) []byte {
-	r, _ := json.Marshal(v)
+	r, _ := json.MarshalSafeCollections(v)
 	return r
 }
 

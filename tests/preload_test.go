@@ -1,12 +1,13 @@
 package tests_test
 
 import (
-	"encoding/json"
 	"regexp"
 	"sort"
 	"strconv"
 	"sync"
 	"testing"
+
+	"github.com/helloeave/json"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -205,7 +206,7 @@ func TestPreloadEmptyData(t *testing.T) {
 
 	DB.Preload("Team").Preload("Languages").Preload("Friends").First(&user, "name = ?", user.Name)
 
-	if r, err := json.Marshal(&user); err != nil {
+	if r, err := json.MarshalSafeCollections(&user); err != nil {
 		t.Errorf("failed to marshal users, got error %v", err)
 	} else if !regexp.MustCompile(`"Team":\[\],"Languages":\[\],"Friends":\[\]`).MatchString(string(r)) {
 		t.Errorf("json marshal is not empty slice, got %v", string(r))
@@ -214,7 +215,7 @@ func TestPreloadEmptyData(t *testing.T) {
 	var results []User
 	DB.Preload("Team").Preload("Languages").Preload("Friends").Find(&results, "name = ?", user.Name)
 
-	if r, err := json.Marshal(&results); err != nil {
+	if r, err := json.MarshalSafeCollections(&results); err != nil {
 		t.Errorf("failed to marshal users, got error %v", err)
 	} else if !regexp.MustCompile(`"Team":\[\],"Languages":\[\],"Friends":\[\]`).MatchString(string(r)) {
 		t.Errorf("json marshal is not empty slice, got %v", string(r))

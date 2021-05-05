@@ -3,9 +3,9 @@ package gorm
 import (
 	"database/sql"
 	"database/sql/driver"
-	"encoding/json"
 	"reflect"
 
+	"github.com/helloeave/json"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
 )
@@ -27,9 +27,9 @@ func (n DeletedAt) Value() (driver.Value, error) {
 
 func (n DeletedAt) MarshalJSON() ([]byte, error) {
 	if n.Valid {
-		return json.Marshal(n.Time)
+		return json.MarshalSafeCollections(n.Time)
 	}
-	return json.Marshal(nil)
+	return json.MarshalSafeCollections(nil)
 }
 
 func (n *DeletedAt) UnmarshalJSON(b []byte) error {

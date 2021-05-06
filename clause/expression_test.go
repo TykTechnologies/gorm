@@ -26,7 +26,7 @@ func TestExpr(t *testing.T) {
 
 	for idx, result := range results {
 		t.Run(fmt.Sprintf("case #%v", idx), func(t *testing.T) {
-			user, _ := schema.Parse(&tests.User{}, &sync.Map{}, db.NamingStrategy)
+			user, _ := schema.Parse(&tests.User{}, &sync.Map{}, db.NamingStrategy, db.AutoEmbedd, db.UseJSONTags)
 			stmt := &gorm.Statement{DB: db, Table: user.Table, Schema: user, Clauses: map[string]clause.Clause{}}
 			clause.Expr{SQL: result.SQL, Vars: result.Vars}.Build(stmt)
 			if stmt.SQL.String() != result.Result {
@@ -88,7 +88,7 @@ func TestNamedExpr(t *testing.T) {
 
 	for idx, result := range results {
 		t.Run(fmt.Sprintf("case #%v", idx), func(t *testing.T) {
-			user, _ := schema.Parse(&tests.User{}, &sync.Map{}, db.NamingStrategy)
+			user, _ := schema.Parse(&tests.User{}, &sync.Map{}, db.NamingStrategy, db.AutoEmbedd, db.UseJSONTags)
 			stmt := &gorm.Statement{DB: db, Table: user.Table, Schema: user, Clauses: map[string]clause.Clause{}}
 			clause.NamedExpr{SQL: result.SQL, Vars: result.Vars}.Build(stmt)
 			if stmt.SQL.String() != result.Result {

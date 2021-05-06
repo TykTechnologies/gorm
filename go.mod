@@ -8,3 +8,6 @@ require (
 	github.com/jinzhu/now v1.1.1
 	gorm.io/gorm v1.20.6
 )
+
+
+replace gorm.io/gorm => github.com/TykTechnologies/gorm v1.20.7-0.20210505094114-003accdaa5de

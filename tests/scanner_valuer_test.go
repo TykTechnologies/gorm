@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -12,6 +11,8 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/helloeave/json"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -208,7 +209,7 @@ func (i *Num) Scan(src interface{}) error {
 type StringsSlice []string
 
 func (l StringsSlice) Value() (driver.Value, error) {
-	bytes, err := json.Marshal(l)
+	bytes, err := json.MarshalSafeCollections(l)
 	return string(bytes), err
 }
 
@@ -238,7 +239,7 @@ func (s ExampleStruct) Value() (driver.Value, error) {
 	}
 	// for test, has no practical meaning
 	s.Name = ""
-	return json.Marshal(s)
+	return json.MarshalSafeCollections(s)
 }
 
 func (s *ExampleStruct) Scan(src interface{}) error {
@@ -255,7 +256,7 @@ func (s *ExampleStruct) Scan(src interface{}) error {
 type StructsSlice []ExampleStruct
 
 func (l StructsSlice) Value() (driver.Value, error) {
-	bytes, err := json.Marshal(l)
+	bytes, err := json.MarshalSafeCollections(l)
 	return string(bytes), err
 }
 

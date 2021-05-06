@@ -9,7 +9,7 @@ import (
 )
 
 func checkStructRelation(t *testing.T, data interface{}, relations ...Relation) {
-	if s, err := schema.Parse(data, &sync.Map{}, schema.NamingStrategy{}); err != nil {
+	if s, err := schema.Parse(data, &sync.Map{}, schema.NamingStrategy{}, false, false); err != nil {
 		t.Errorf("Failed to parse schema")
 	} else {
 		for _, rel := range relations {

@@ -1,10 +1,11 @@
 package tests_test
 
 import (
-	"encoding/json"
 	"errors"
 	"regexp"
 	"testing"
+
+	"github.com/helloeave/json"
 
 	"gorm.io/gorm"
 	. "gorm.io/gorm/utils/tests"
@@ -70,7 +71,7 @@ func TestSoftDelete(t *testing.T) {
 
 func TestDeletedAtUnMarshal(t *testing.T) {
 	expected := &gorm.Model{}
-	b, _ := json.Marshal(expected)
+	b, _ := json.MarshalSafeCollections(expected)
 
 	result := &gorm.Model{}
 	_ = json.Unmarshal(b, result)

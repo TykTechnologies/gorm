@@ -21,7 +21,7 @@ func (UserWithCallback) AfterCreate(*gorm.DB) error {
 }
 
 func TestCallback(t *testing.T) {
-	user, err := schema.Parse(&UserWithCallback{}, &sync.Map{}, schema.NamingStrategy{}, true, false)
+	user, err := schema.Parse(&UserWithCallback{}, &sync.Map{}, schema.NamingStrategy{}, false, false)
 	if err != nil {
 		t.Fatalf("failed to parse user with callback, got error %v", err)
 	}

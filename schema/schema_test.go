@@ -11,7 +11,7 @@ import (
 )
 
 func TestParseSchema(t *testing.T) {
-	user, err := schema.Parse(&tests.User{}, &sync.Map{}, schema.NamingStrategy{}, true, false)
+	user, err := schema.Parse(&tests.User{}, &sync.Map{}, schema.NamingStrategy{}, false, false)
 	if err != nil {
 		t.Fatalf("failed to parse user, got error %v", err)
 	}
@@ -20,7 +20,7 @@ func TestParseSchema(t *testing.T) {
 }
 
 func TestParseSchemaWithPointerFields(t *testing.T) {
-	user, err := schema.Parse(&User{}, &sync.Map{}, schema.NamingStrategy{}, true, false)
+	user, err := schema.Parse(&User{}, &sync.Map{}, schema.NamingStrategy{}, false, false)
 	if err != nil {
 		t.Fatalf("failed to parse pointer user, got error %v", err)
 	}
@@ -117,7 +117,7 @@ func checkUserSchema(t *testing.T, user *schema.Schema) {
 }
 
 func TestParseSchemaWithAdvancedDataType(t *testing.T) {
-	user, err := schema.Parse(&AdvancedDataTypeUser{}, &sync.Map{}, schema.NamingStrategy{}, true, false)
+	user, err := schema.Parse(&AdvancedDataTypeUser{}, &sync.Map{}, schema.NamingStrategy{}, false, false)
 	if err != nil {
 		t.Fatalf("failed to parse pointer user, got error %v", err)
 	}
@@ -153,7 +153,7 @@ func (CustomizeTable) TableName() string {
 }
 
 func TestCustomizeTableName(t *testing.T) {
-	customize, err := schema.Parse(&CustomizeTable{}, &sync.Map{}, schema.NamingStrategy{}, true, false)
+	customize, err := schema.Parse(&CustomizeTable{}, &sync.Map{}, schema.NamingStrategy{}, false, false)
 	if err != nil {
 		t.Fatalf("failed to parse pointer user, got error %v", err)
 	}
@@ -164,7 +164,7 @@ func TestCustomizeTableName(t *testing.T) {
 }
 
 func TestNestedModel(t *testing.T) {
-	versionUser, err := schema.Parse(&VersionUser{}, &sync.Map{}, schema.NamingStrategy{}, true, false)
+	versionUser, err := schema.Parse(&VersionUser{}, &sync.Map{}, schema.NamingStrategy{}, false, false)
 
 	if err != nil {
 		t.Fatalf("failed to parse nested user, got error %v", err)
@@ -203,7 +203,7 @@ func TestEmbeddedStruct(t *testing.T) {
 		Base Company `gorm:"embedded;embeddedPrefix:company_"`
 	}
 
-	cropSchema, err := schema.Parse(&Corp{}, &sync.Map{}, schema.NamingStrategy{}, true, false)
+	cropSchema, err := schema.Parse(&Corp{}, &sync.Map{}, schema.NamingStrategy{}, false, false)
 
 	if err != nil {
 		t.Fatalf("failed to parse embedded struct with primary key, got error %v", err)
@@ -272,7 +272,7 @@ func TestEmbeddedStructForCustomizedNamingStrategy(t *testing.T) {
 		Base Company `gorm:"embedded;embeddedPrefix:company_"`
 	}
 
-	cropSchema, err := schema.Parse(&Corp{}, &sync.Map{}, CustomizedNamingStrategy{schema.NamingStrategy{}}, true, false)
+	cropSchema, err := schema.Parse(&Corp{}, &sync.Map{}, CustomizedNamingStrategy{schema.NamingStrategy{}}, false, false)
 
 	if err != nil {
 		t.Fatalf("failed to parse embedded struct with primary key, got error %v", err)

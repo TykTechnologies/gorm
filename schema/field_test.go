@@ -14,7 +14,7 @@ import (
 
 func TestFieldValuerAndSetter(t *testing.T) {
 	var (
-		userSchema, _ = schema.Parse(&tests.User{}, &sync.Map{}, schema.NamingStrategy{}, true, false)
+		userSchema, _ = schema.Parse(&tests.User{}, &sync.Map{}, schema.NamingStrategy{}, false, false)
 		user          = tests.User{
 			Model: gorm.Model{
 				ID:        10,
@@ -90,7 +90,7 @@ func TestFieldValuerAndSetter(t *testing.T) {
 
 func TestPointerFieldValuerAndSetter(t *testing.T) {
 	var (
-		userSchema, _      = schema.Parse(&User{}, &sync.Map{}, schema.NamingStrategy{}, true, false)
+		userSchema, _      = schema.Parse(&User{}, &sync.Map{}, schema.NamingStrategy{}, false, false)
 		name               = "pointer_field_valuer_and_setter"
 		age           uint = 18
 		active             = true
@@ -160,7 +160,7 @@ func TestPointerFieldValuerAndSetter(t *testing.T) {
 
 func TestAdvancedDataTypeValuerAndSetter(t *testing.T) {
 	var (
-		userSchema, _ = schema.Parse(&AdvancedDataTypeUser{}, &sync.Map{}, schema.NamingStrategy{}, true, false)
+		userSchema, _ = schema.Parse(&AdvancedDataTypeUser{}, &sync.Map{}, schema.NamingStrategy{}, false, false)
 		name          = "advanced_data_type_valuer_and_setter"
 		deletedAt     = mytime(time.Now())
 		isAdmin       = mybool(false)
@@ -238,7 +238,7 @@ type UserWithPermissionControl struct {
 }
 
 func TestParseFieldWithPermission(t *testing.T) {
-	user, err := schema.Parse(&UserWithPermissionControl{}, &sync.Map{}, schema.NamingStrategy{}, true, false)
+	user, err := schema.Parse(&UserWithPermissionControl{}, &sync.Map{}, schema.NamingStrategy{}, false, false)
 	if err != nil {
 		t.Fatalf("Failed to parse user with permission, got error %v", err)
 	}

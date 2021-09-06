@@ -941,7 +941,7 @@ func (field *Field) setupValuerAndSetter() {
 						case *sql.RawBytes:
 							bytes = []byte(*t)
 						default:
-							panic("wrong type")
+							return
 						}
 
 						if valueV.Kind() == reflect.Ptr {

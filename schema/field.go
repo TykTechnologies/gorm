@@ -67,7 +67,7 @@ type Field struct {
 	StructField            reflect.StructField
 	Tag                    reflect.StructTag
 	TagSettings            map[string]string
-	JSONTagSettings       map[string]string
+	JSONTagSettings        map[string]string
 	Schema                 *Schema
 	EmbeddedSchema         *Schema
 	OwnerSchema            *Schema
@@ -940,6 +940,8 @@ func (field *Field) setupValuerAndSetter() {
 							bytes = []byte(t)
 						case *sql.RawBytes:
 							bytes = []byte(*t)
+						case nil:
+							return
 						default:
 							panic("wrong type")
 						}

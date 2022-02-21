@@ -2,7 +2,7 @@ github.com/helloeave/json v1.15.3 h1:roUxUEGhsSvhuhi80c4qmLiW633d5uf0mkzUGzBMfX8
 github.com/helloeave/json v1.15.3/go.mod h1:uTHhuUsgnrpm9cc7Gi3tfIUwgf1dq/7+uLfpUFLBFEQ=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
-github.com/jinzhu/now v1.1.2 h1:eVKgfIdy9b6zbWBMgFpfDPoAMifwSZagU9HmEU6zgiI=
-github.com/jinzhu/now v1.1.2/go.mod h1:d3SSVoowX0Lcu0IBviAWJpolVfI5UJVZZ7cO71lE/z8=
-gorm.io/gorm v1.21.10 h1:kBGiBsaqOQ+8f6S2U6mvGFz6aWWyCeIiuaFcaBozp4M=
-gorm.io/gorm v1.21.10/go.mod h1:F+OptMscr0P2F2qU97WT1WimdH9GaQPoDW7AYd5i2Y0=
+github.com/jinzhu/now v1.1.4 h1:tHnRBy1i5F2Dh8BAFxqFzxKqqvezXrL2OW1TnX+Mlas=
+github.com/jinzhu/now v1.1.4/go.mod h1:d3SSVoowX0Lcu0IBviAWJpolVfI5UJVZZ7cO71lE/z8=
+gorm.io/gorm v1.23.1 h1:aj5IlhDzEPsoIyOPtTRVI+SyaN1u6k613sbt4pwbxG0=
+gorm.io/gorm v1.23.1/go.mod h1:l2lP/RyAtc1ynaTjFksBde/O8v9oOGIApu2/xRitmZk=

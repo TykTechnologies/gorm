@@ -61,3 +61,17 @@ type Valuer interface {
 type GetDBConnector interface {
 	GetDBConn() (*sql.DB, error)
 }
+
+// Rows rows interface
+type Rows interface {
+	Columns() ([]string, error)
+	ColumnTypes() ([]*sql.ColumnType, error)
+	Next() bool
+	Scan(dest ...interface{}) error
+	Err() error
+	Close() error
+}
+
+type ErrorTranslator interface {
+	Translate(err error) error
+}

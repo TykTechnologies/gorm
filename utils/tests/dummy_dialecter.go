@@ -8,6 +8,7 @@ import (
 )
 
 type DummyDialector struct {
+	TranslatedErr error
 }
 
 func (DummyDialector) Name() string {
@@ -42,4 +43,8 @@ func (DummyDialector) Explain(sql string, vars ...interface{}) string {
 
 func (DummyDialector) DataTypeOf(*schema.Field) string {
 	return ""
+}
+
+func (d DummyDialector) Translate(err error) error {
+	return d.TranslatedErr
 }

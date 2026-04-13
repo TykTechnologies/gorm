@@ -39,4 +39,8 @@ var (
 	ErrInvalidValue = errors.New("invalid value, should be pointer to struct or slice")
 	// ErrInvalidValueOfLength invalid values do not match length
 	ErrInvalidValueOfLength = errors.New("invalid association values, length doesn't match")
+	// ErrPreloadNotAllowed preload is not allowed when count is used
+	ErrPreloadNotAllowed = errors.New("preload is not allowed when count is used")
+	// ErrDuplicatedKey occurs when there is a unique key constraint violation
+	ErrDuplicatedKey = errors.New("duplicated key not allowed")
 )

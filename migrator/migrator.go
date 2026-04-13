@@ -3,6 +3,7 @@ package migrator
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -818,4 +819,9 @@ func (m Migrator) CurrentTable(stmt *gorm.Statement) interface{} {
 		return *stmt.TableExpr
 	}
 	return clause.Table{Name: stmt.Table}
+}
+
+// GetIndexes return Indexes []gorm.Index and execErr error
+func (m Migrator) GetIndexes(dst interface{}) ([]gorm.Index, error) {
+	return nil, errors.New("not support")
 }
